@@ -1,0 +1,9 @@
+﻿src/app/modules/user/user.service.ts(134,48): error TS2339: Property 'id' does not exist on type 'IShippingAddress[]'.
+src/app/modules/user/user.service.ts(156,28): error TS2339: Property '_id' does not exist on type 'IShippingAddress'.
+src/app/utils/QueryBuilder.ts(68,9): error TS2322: Type 'Query<(Document<unknown, {}, unknown, {}, {}> & Required<{ _id: unknown; }> & { __v: number; })[], T, {}, unknown, "find", Record<string, never>>' is not assignable to type 'Query<T[], T, {}, unknown, "find", Record<string, never>>'.
+  The types returned by 'exec()' are incompatible between these types.
+    Type 'Promise<(Document<unknown, {}, unknown, {}, {}> & Required<{ _id: unknown; }> & { __v: number; })[]>' is not assignable to type 'Promise<T[]>'.
+      Type '(Document<unknown, {}, unknown, {}, {}> & Required<{ _id: unknown; }> & { __v: number; })[]' is not assignable to type 'T[]'.
+        Type 'Document<unknown, {}, unknown, {}, {}> & Required<{ _id: unknown; }> & { __v: number; }' is not assignable to type 'T'.
+          'T' could be instantiated with an arbitrary type which could be unrelated to 'Document<unknown, {}, unknown, {}, {}> & Required<{ _id: unknown; }> & { __v: number; }'.
+src/scripts/seed.ts(171,186): error TS1117: An object literal cannot have multiple properties with the same name.
