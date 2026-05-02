@@ -30,7 +30,7 @@ async function setupAdmin() {
                 email: 'admin@gmail.com',
                 password: 'admin@gmail.com',
                 firstName: 'Admin',
-                lastName: 'Dominion',
+                lastName: 'Sinotri',
                 role: 'admin',
                 status: 'active',
                 isEmailVerified: true,

@@ -81,8 +81,8 @@ const OrderService = {
             }
         }
 
-        const shippingCost = subtotal >= 1000 ? 0 : 60; // Free shipping over 1000tk
-        const total = subtotal + shippingCost - discount;
+        const shippingCost = 0; // Shipping disabled
+        const total = subtotal - discount;
 
         // Create order
         const order = await Order.create({
@@ -134,7 +134,7 @@ const OrderService = {
         }
 
         // Auto-generate guest email from phone if not provided
-        const guestEmail = email || `${phone.replace(/\s+/g, '')}@guest.dominion.com`;
+        const guestEmail = email || `${phone.replace(/\s+/g, '')}@guest.sinotriglobal.com`;
 
         // Check if user already exists
         let user = await User.findOne({ $or: [{ email: guestEmail.toLowerCase() }, { phone }] });

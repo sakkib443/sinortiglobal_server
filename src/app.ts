@@ -54,7 +54,7 @@ app.use(cors({
 app.get('/', (req: Request, res: Response) => {
     res.status(200).json({
         success: true,
-        message: '🛒 Dominion E-Commerce API Server is running!',
+        message: '🛒 Sinotri Global API Server is running!',
         version: '1.0.0',
         environment: config.env,
         timestamp: new Date().toISOString(),

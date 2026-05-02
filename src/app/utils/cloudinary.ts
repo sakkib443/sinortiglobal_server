@@ -14,7 +14,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary,
     params: async (_req: any, file: any) => ({
-        folder:         'dominion/products',
+        folder:         'sinotri/products',
         allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'gif', 'avif'],
         transformation: [{ width: 1200, height: 1200, crop: 'limit', quality: 'auto:good' }],
         public_id:      `product_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,

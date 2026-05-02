@@ -18,7 +18,7 @@ const SiteContentService = {
                 contact: {
                     phone: '01753923093',
                     whatsapp: '01322840808',
-                    email: 'support@dominion.com',
+                    email: 'support@sinotriglobal.com',
                     address: 'Dhaka, Bangladesh',
                     hours: [
                         { day: 'Sunday – Thursday', time: '9:00 AM – 6:00 PM' },
@@ -46,15 +46,15 @@ const SiteContentService = {
                     showMessenger: true,
                 },
                 footer: {
-                    companyName: 'Dominion',
+                    companyName: 'Sinotri Global',
                     copyright: '',
                     links: [],
                 },
                 defaultTagline: 'Lower price than others but quality higher',
                 seo: {
-                    title: 'Dominion - Premium Online Shopping Experience',
-                    description: 'Shop the latest products with amazing deals at Dominion. Premium quality products at best prices.',
-                    keywords: 'dominion, ecommerce, online shopping, best deals, products, shop',
+                    title: 'Sinotri Global - Premium Online Shopping Experience',
+                    description: 'Shop the latest products with amazing deals at Sinotri Global. Premium quality products at best prices.',
+                    keywords: 'sinotri global, ecommerce, online shopping, best deals, products, shop',
                 },
                 announcement: {
                     message: '',

@@ -29,10 +29,10 @@ async function checkAndCreateAdmin() {
             console.log('❌ No admin found! Creating one...\n');
             
             const admin = await User.create({
-                email: 'admin@dominion.com',
+                email: 'admin@sinotriglobal.com',
                 password: 'admin123456',
                 firstName: 'Admin',
-                lastName: 'Dominion',
+                lastName: 'Sinotri',
                 phone: '+8801700000000',
                 role: 'admin',
                 status: 'active',
@@ -40,7 +40,7 @@ async function checkAndCreateAdmin() {
             });
 
             console.log('✅ Admin created successfully!\n');
-            console.log('  📧 Email:    admin@dominion.com');
+            console.log('  📧 Email:    admin@sinotriglobal.com');
             console.log('  🔑 Password: admin123456');
             console.log(`  👤 Name:     ${admin.firstName} ${admin.lastName}`);
             console.log(`  🔰 Role:     ${admin.role}`);

@@ -52,7 +52,7 @@ const siteContentSchema = new Schema({
 
     // ── Footer ──
     footer: {
-        companyName: { type: String, default: 'Dominion' },
+        companyName: { type: String, default: 'Sinotri Global' },
         copyright: { type: String, default: '' },
         links: [{
             label: { type: String, required: true },
@@ -65,9 +65,9 @@ const siteContentSchema = new Schema({
 
     // ── SEO / Meta ──
     seo: {
-        title: { type: String, default: 'Dominion - Premium Online Shopping Experience' },
-        description: { type: String, default: 'Shop the latest products with amazing deals at Dominion.' },
-        keywords: { type: String, default: 'dominion, ecommerce, online shopping' },
+        title: { type: String, default: 'Sinotri Global - Premium Online Shopping Experience' },
+        description: { type: String, default: 'Shop the latest products with amazing deals at Sinotri Global.' },
+        keywords: { type: String, default: 'sinotri global, ecommerce, online shopping' },
     },
 
     // ── Announcement Bar ──

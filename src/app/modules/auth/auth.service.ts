@@ -21,7 +21,7 @@ const AuthService = {
         const { firstName, lastName, email, phone, password, location } = payload;
 
         // Auto-generate guest email if only phone provided
-        const userEmail = email || `${phone?.replace(/\s+/g, '')}@guest.dominion.com`;
+        const userEmail = email || `${phone?.replace(/\s+/g, '')}@guest.sinotriglobal.com`;
 
         const isExists = await User.isUserExists(userEmail);
         if (isExists) throw new AppError(400, 'Account already exists. Please login.');
