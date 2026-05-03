@@ -24,7 +24,13 @@ const AuthService = {
         const userEmail = email || `${phone?.replace(/\s+/g, '')}@guest.sinotriglobal.com`;
 
         const isExists = await User.isUserExists(userEmail);
-        if (isExists) throw new AppError(400, 'Account already exists. Please login.');
+        if (isExists) throw new AppError(400, 'Account already exists with this email. Please login.');
+
+        // Also check if phone is already registered
+        if (phone) {
+            const phoneExists = await User.findOne({ phone: phone.trim() });
+            if (phoneExists) throw new AppError(400, 'This phone number is already registered. Please login.');
+        }
 
         const user = await User.create({
             firstName,
