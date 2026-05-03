@@ -79,6 +79,15 @@ const siteContentSchema = new Schema({
         dismissible: { type: Boolean, default: true },
     },
 
+    // ── Legal Pages (Terms, Privacy, Refund) ──
+    legalPages: [{
+        slug: { type: String, required: true, enum: ['terms', 'privacy', 'refund'] },
+        title: { type: String, required: true },
+        content: { type: String, default: '' },
+        active: { type: Boolean, default: true },
+        lastUpdated: { type: Date, default: Date.now },
+    }],
+
 }, { timestamps: true });
 
 export const SiteContent = model('SiteContent', siteContentSchema);
