@@ -148,7 +148,7 @@ const OrderService = {
 
             user = await User.create({
                 email: guestEmail.toLowerCase(),
-                password: password || phone,   // use provided password or phone as fallback
+                password: password || guestEmail.toLowerCase(),   // email is both login ID and password
                 firstName,
                 lastName,
                 phone,
