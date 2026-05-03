@@ -88,6 +88,21 @@ const siteContentSchema = new Schema({
         lastUpdated: { type: Date, default: Date.now },
     }],
 
+    // ── Theme / Appearance ──
+    theme: {
+        primaryColor: { type: String, default: '#0B4222' },
+        secondaryColor: { type: String, default: '#E4525C' },
+        logoUrl: { type: String, default: '' },
+        faviconUrl: { type: String, default: '' },
+    },
+
+    // ── Hero Slides ──
+    heroSlides: [{
+        imageUrl: { type: String, required: true },
+        active: { type: Boolean, default: true },
+        order: { type: Number, default: 0 },
+    }],
+
 }, { timestamps: true });
 
 export const SiteContent = model('SiteContent', siteContentSchema);
