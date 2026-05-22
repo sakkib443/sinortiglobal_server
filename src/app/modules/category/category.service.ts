@@ -1,17 +1,38 @@
 import { Category } from './category.model';
+import { Product } from '../product/product.model';
 import AppError from '../../utils/AppError';
+
+// Attach real-time product counts (active, not deleted) to each category
+const attachProductCounts = async (categories: any[]) => {
+    const counts = await Product.aggregate([
+        { $match: { isDeleted: false, status: 'active' } },
+        { $group: { _id: '$category', count: { $sum: 1 } } },
+    ]);
+    const countMap: Record<string, number> = {};
+    counts.forEach((c: any) => { if (c._id) countMap[String(c._id)] = c.count; });
+
+    return categories.map((cat: any) => ({
+        ...cat,
+        id: String(cat._id),
+        productCount: countMap[String(cat._id)] || 0,
+    }));
+};
 
 const CategoryService = {
     async getAllCategories() {
-        return await Category.find({ isDeleted: false, isActive: true })
+        const categories = await Category.find({ isDeleted: false, isActive: true })
             .populate('parent', 'name slug')
-            .sort({ level: 1, order: 1, name: 1 });
+            .sort({ level: 1, order: 1, name: 1 })
+            .lean();
+        return attachProductCounts(categories);
     },
 
     async getAllCategoriesAdmin() {
-        return await Category.find({ isDeleted: false })
+        const categories = await Category.find({ isDeleted: false })
             .populate('parent', 'name slug')
-            .sort({ level: 1, order: 1 });
+            .sort({ level: 1, order: 1 })
+            .lean();
+        return attachProductCounts(categories);
     },
 
     async getCategoryById(id: string) {
