@@ -41,7 +41,7 @@ const OrderService = {
     },
 
     async createOrder(userId: string, payload: any) {
-        const { items, shippingAddress, paymentMethod, couponCode, note } = payload;
+        const { items, shippingAddress, paymentMethod, paymentDetails, couponCode, note } = payload;
 
         // Get product details and calculate totals
         let subtotal = 0;
@@ -95,6 +95,8 @@ const OrderService = {
             total,
             couponCode: couponCode || '',
             paymentMethod,
+            paymentDetails: paymentDetails || {},
+            transactionId: paymentDetails?.transactionId || '',
             note: note || '',
             timeline: [{ status: 'pending', note: 'Order placed successfully' }],
         });

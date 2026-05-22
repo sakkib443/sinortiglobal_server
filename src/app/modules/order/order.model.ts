@@ -49,8 +49,8 @@ const orderSchema = new Schema(
         },
         paymentMethod: {
             type: String,
-            enum: ['cod', 'bkash', 'card'],
-            default: 'cod',
+            enum: ['cod', 'bkash', 'rocket', 'nagad'],
+            default: 'bkash',
         },
         paymentStatus: {
             type: String,
@@ -58,6 +58,11 @@ const orderSchema = new Schema(
             default: 'pending',
         },
         transactionId: { type: String, default: '' },
+        paymentDetails: {
+            senderNumber: { type: String, default: '' },
+            transactionId: { type: String, default: '' },
+            paymentTime: { type: String, default: '' },
+        },
         trackingNumber: { type: String, default: '' },
         carrier: { type: String, default: '' },
 

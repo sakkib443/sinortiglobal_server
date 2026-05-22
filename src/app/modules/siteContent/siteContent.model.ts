@@ -50,6 +50,14 @@ const siteContentSchema = new Schema({
         showMessenger: { type: Boolean, default: true },
     },
 
+    // ── Mobile Payment Numbers (bKash / Rocket / Nagad) ──
+    payment: {
+        bkash:  { number: { type: String, default: '' }, accountType: { type: String, default: 'Personal' }, active: { type: Boolean, default: true } },
+        rocket: { number: { type: String, default: '' }, accountType: { type: String, default: 'Personal' }, active: { type: Boolean, default: true } },
+        nagad:  { number: { type: String, default: '' }, accountType: { type: String, default: 'Personal' }, active: { type: Boolean, default: true } },
+        instructions: { type: String, default: 'Send Money to the number above, then submit your number, transaction ID and payment time below.' },
+    },
+
     // ── Footer ──
     footer: {
         companyName: { type: String, default: 'Sinotri Global' },

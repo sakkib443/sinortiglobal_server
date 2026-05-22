@@ -15,11 +15,18 @@ const shippingAddressValidation = z.object({
     postalCode: z.string().optional(),
 });
 
+const paymentDetailsValidation = z.object({
+    senderNumber: z.string().optional(),
+    transactionId: z.string().optional(),
+    paymentTime: z.string().optional(),
+}).optional();
+
 export const createOrderValidation = z.object({
     body: z.object({
         items: z.array(orderItemValidation).min(1, 'At least one item required'),
         shippingAddress: shippingAddressValidation,
-        paymentMethod: z.enum(['cod', 'bkash', 'card']).default('cod'),
+        paymentMethod: z.enum(['cod', 'bkash', 'rocket', 'nagad']).default('bkash'),
+        paymentDetails: paymentDetailsValidation,
         couponCode: z.string().optional(),
         note: z.string().optional(),
     }),

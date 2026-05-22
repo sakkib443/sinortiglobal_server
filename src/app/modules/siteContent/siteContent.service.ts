@@ -100,6 +100,24 @@ const SiteContentService = {
             );
         }
 
+        // Auto-migrate: ensure payment object exists
+        if (!content.get('payment')) {
+            content = await SiteContent.findOneAndUpdate(
+                { _key: 'main' },
+                {
+                    $set: {
+                        payment: {
+                            bkash:  { number: '', accountType: 'Personal', active: true },
+                            rocket: { number: '', accountType: 'Personal', active: true },
+                            nagad:  { number: '', accountType: 'Personal', active: true },
+                            instructions: 'Send Money to the number above, then submit your number, transaction ID and payment time below.',
+                        },
+                    },
+                },
+                { new: true }
+            );
+        }
+
         return content;
     },
 
