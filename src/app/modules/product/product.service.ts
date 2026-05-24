@@ -67,7 +67,7 @@ const ProductService = {
 
     // ── Get single product ──────────────────────────────────────────────
     async getProductById(id: string) {
-        const product = await Product.findOne({ _id: id, isDeleted: false })
+        const product = await Product.findOne({ _id: id, isDeleted: { $ne: true } })
             .populate('category', 'name slug');
         if (!product) throw new AppError(404, 'Product not found');
 
@@ -78,7 +78,7 @@ const ProductService = {
 
     // ── Get product by slug ─────────────────────────────────────────────
     async getProductBySlug(slug: string) {
-        const product = await Product.findOne({ slug, isDeleted: false })
+        const product = await Product.findOne({ slug, isDeleted: { $ne: true } })
             .populate('category', 'name slug');
         if (!product) throw new AppError(404, 'Product not found');
         await Product.findByIdAndUpdate(product._id, { $inc: { viewCount: 1 } });
