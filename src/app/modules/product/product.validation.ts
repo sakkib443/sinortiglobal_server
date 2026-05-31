@@ -19,6 +19,9 @@ export const createProductValidation = z.object({
         // Category
         category: z.string().min(1, 'Category is required'),
 
+        // Country (sourcing origin)
+        country: z.enum(['Bangladesh', 'Pakistan', 'UAE', 'USA', 'China', '']).optional(),
+
         // Status
         status:     z.enum(['active', 'draft', 'out-of-stock']).optional(),
         visibility: z.enum(['visible', 'hidden']).optional(),

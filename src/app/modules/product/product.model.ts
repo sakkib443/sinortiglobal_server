@@ -43,6 +43,14 @@ const productSchema = new Schema(
         // ── Category ─────────────────────────────────────────────
         category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
 
+        // ── Country (sourcing origin — used for header country filter) ──
+        country: {
+            type: String,
+            enum: { values: ['Bangladesh', 'Pakistan', 'UAE', 'USA', 'China', ''], message: '{VALUE} is not a valid country' },
+            default: '',
+            trim: true,
+        },
+
         // ── Variants ──────────────────────────────────────────────
         // Each variant = unique color+size combo with its own price, stock, images
         variants: { type: [variantSchema], default: [] },
@@ -94,6 +102,7 @@ const productSchema = new Schema(
 // ── Indexes ────────────────────────────────────────────────
 productSchema.index({ name: 'text', description: 'text', tags: 'text' });
 productSchema.index({ category: 1, status: 1 });
+productSchema.index({ country: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ rating: -1, totalSold: -1 });
 productSchema.index({ tags: 1 });

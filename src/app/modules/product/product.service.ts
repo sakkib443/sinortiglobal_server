@@ -6,6 +6,17 @@ import QueryBuilder from '../../utils/QueryBuilder';
 const ProductService = {
     // ── Get all products (public, with full filtering) ──────────────────
     async getAllProducts(query: Record<string, unknown>) {
+        // Country filter (sourcing origin). "All"/empty means no country filter.
+        const country = typeof query.country === 'string' && query.country && query.country !== 'All'
+            ? (query.country as string)
+            : undefined;
+        // Remove invalid country value so QueryBuilder.filter() doesn't filter on "All"/empty.
+        // Valid values are applied automatically by filter() (normal path) and injected
+        // explicitly into the search+category rebuild path below.
+        if (!country) {
+            delete query.country;
+        }
+
         // If searching, also look for matching categories by name
         let categoryIds: string[] = [];
         if (query.searchTerm) {
@@ -45,6 +56,7 @@ const ProductService = {
             const currentFilter = productQuery.modelQuery.getFilter();
             productQuery.modelQuery = Product.find({
                 isDeleted: false,
+                ...(country ? { country } : {}),
                 $or: [
                     { category: { $in: categoryIds } },
                     ...(currentFilter.$and || [currentFilter]),
