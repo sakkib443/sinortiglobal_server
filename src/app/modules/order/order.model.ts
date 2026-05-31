@@ -2,6 +2,7 @@ import { Schema, model } from 'mongoose';
 
 const orderItemSchema = new Schema({
     product: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
+    variantId: { type: Schema.Types.ObjectId, default: null }, // which variant was ordered (if any)
     name: { type: String, required: true },
     thumbnail: { type: String, required: true },
     price: { type: Number, required: true },

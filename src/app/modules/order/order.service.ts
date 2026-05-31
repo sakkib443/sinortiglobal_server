@@ -48,22 +48,55 @@ const OrderService = {
         const orderItems = [];
 
         for (const item of items) {
-            const product = await Product.findOne({ _id: item.product, isDeleted: false, status: 'active' });
+            const product: any = await Product.findOne({ _id: item.product, isDeleted: false, status: 'active' });
             if (!product) throw new AppError(404, `Product not found: ${item.product}`);
-            if (product.stock < item.quantity) throw new AppError(400, `Insufficient stock for: ${product.name}`);
 
-            const itemTotal = product.price * item.quantity;
+            // ── Resolve the unit price the SAME way the storefront shows it ──
+            // 1) If a matching variant exists, use its (discounted) price + its stock.
+            // 2) Otherwise use the product price with its %-offer applied.
+            let variant: any = null;
+            if ((item.color || item.size) && Array.isArray(product.variants) && product.variants.length > 0) {
+                variant = product.variants.find((v: any) =>
+                    (!item.color || v.color === item.color) && (!item.size || v.size === item.size)
+                );
+            }
+
+            let unitPrice: number;
+            let availableStock: number;
+            let thumb = product.thumbnail;
+
+            if (variant) {
+                const vDiscount = variant.discount || 0;
+                unitPrice = vDiscount > 0
+                    ? Math.round(variant.price - (variant.price * vDiscount) / 100)
+                    : variant.price;
+                availableStock = variant.stock;
+                if (variant.images?.[0]) thumb = variant.images[0];
+            } else {
+                const pDiscount = product.discount || 0;
+                unitPrice = pDiscount > 0
+                    ? Math.round(product.price - (product.price * pDiscount) / 100)
+                    : product.price;
+                availableStock = product.stock;
+            }
+
+            if (availableStock < item.quantity) {
+                throw new AppError(400, `Insufficient stock for: ${product.name}`);
+            }
+
+            const itemTotal = unitPrice * item.quantity;
             subtotal += itemTotal;
 
             orderItems.push({
                 product: product._id,
                 name: product.name,
-                thumbnail: product.thumbnail,
-                price: product.price,
+                thumbnail: thumb,
+                price: unitPrice,
                 quantity: item.quantity,
                 total: itemTotal,
                 color: item.color || '',
                 size: item.size || '',
+                variantId: variant?._id || undefined,
             });
         }
 
@@ -101,11 +134,19 @@ const OrderService = {
             timeline: [{ status: 'pending', note: 'Order placed successfully' }],
         });
 
-        // Update stock and product sold count
+        // Update stock and product sold count (variant stock when applicable)
         for (const item of orderItems) {
-            await Product.findByIdAndUpdate(item.product, {
-                $inc: { stock: -item.quantity, totalSold: item.quantity },
-            });
+            if ((item as any).variantId) {
+                // Decrement the specific variant's stock + the product's sold count
+                await Product.updateOne(
+                    { _id: item.product, 'variants._id': (item as any).variantId },
+                    { $inc: { 'variants.$.stock': -item.quantity, totalSold: item.quantity } },
+                );
+            } else {
+                await Product.findByIdAndUpdate(item.product, {
+                    $inc: { stock: -item.quantity, totalSold: item.quantity },
+                });
+            }
         }
 
         // Update user stats
@@ -215,9 +256,16 @@ const OrderService = {
         order.timeline.push({ status: 'cancelled', note: 'Cancelled by user', createdAt: new Date() } as any);
         await order.save();
 
-        // Restore stock
-        for (const item of order.items) {
-            await Product.findByIdAndUpdate(item.product, { $inc: { stock: item.quantity } });
+        // Restore stock (variant stock when applicable)
+        for (const item of order.items as any[]) {
+            if (item.variantId) {
+                await Product.updateOne(
+                    { _id: item.product, 'variants._id': item.variantId },
+                    { $inc: { 'variants.$.stock': item.quantity } },
+                );
+            } else {
+                await Product.findByIdAndUpdate(item.product, { $inc: { stock: item.quantity } });
+            }
         }
 
         return order;
