@@ -53,7 +53,7 @@ const InquiryService = {
             .limit(limit);
 
         const total = await Inquiry.countDocuments(filter);
-        return { inquiries, meta: { page, limit, total, totalPage: Math.ceil(total / limit) } };
+        return { inquiries, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
     },
 
     async getByProduct(productId: string) {
