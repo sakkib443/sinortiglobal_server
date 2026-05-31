@@ -42,6 +42,8 @@ const productSchema = new Schema(
 
         // ── Category ─────────────────────────────────────────────
         category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
+        // Optional subcategory — must be a child of `category`
+        subcategory: { type: Schema.Types.ObjectId, ref: 'Category', default: null },
 
         // ── Country (sourcing origin — used for header country filter) ──
         country: {
@@ -102,6 +104,7 @@ const productSchema = new Schema(
 // ── Indexes ────────────────────────────────────────────────
 productSchema.index({ name: 'text', description: 'text', tags: 'text' });
 productSchema.index({ category: 1, status: 1 });
+productSchema.index({ subcategory: 1 });
 productSchema.index({ country: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ rating: -1, totalSold: -1 });

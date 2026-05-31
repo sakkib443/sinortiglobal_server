@@ -45,6 +45,11 @@ const OrderController = {
         sendResponse(res, { statusCode: 200, success: true, message: 'Order cancelled', data: order });
     }),
 
+    delete: catchAsync(async (req: Request, res: Response) => {
+        await OrderService.deleteOrder(req.params.id);
+        sendResponse(res, { statusCode: 200, success: true, message: 'Order deleted' });
+    }),
+
     getStats: catchAsync(async (req: Request, res: Response) => {
         const stats = await OrderService.getOrderStats();
         sendResponse(res, { statusCode: 200, success: true, message: 'Order stats fetched', data: stats });

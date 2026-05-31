@@ -1,5 +1,5 @@
 import express from 'express';
-import { upload } from '../../utils/cloudinary';
+import { upload, uploadVideo } from '../../utils/cloudinary';
 import { uploadController } from './upload.controller';
 import { authMiddleware, authorizeRoles } from '../../middlewares/auth';
 
@@ -12,6 +12,15 @@ router.post(
     authorizeRoles('admin'),
     upload.single('image'),
     uploadController.uploadSingle,
+);
+
+// POST /api/upload/video  — single video (admin only)
+router.post(
+    '/video',
+    authMiddleware,
+    authorizeRoles('admin'),
+    uploadVideo.single('video'),
+    uploadController.uploadVideo,
 );
 
 // POST /api/upload/images — multiple up to 10 (admin only)

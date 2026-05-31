@@ -104,9 +104,12 @@ const siteContentSchema = new Schema({
         faviconUrl: { type: String, default: '' },
     },
 
-    // ── Hero Slides ──
+    // ── Hero Slides (image OR video — uploaded video / YouTube link) ──
     heroSlides: [{
-        imageUrl: { type: String, required: true },
+        mediaType:  { type: String, enum: ['image', 'video'], default: 'image' },
+        imageUrl:   { type: String, default: '' }, // when mediaType === 'image'
+        videoUrl:   { type: String, default: '' }, // uploaded video (Cloudinary)
+        youtubeUrl: { type: String, default: '' }, // YouTube link
         active: { type: Boolean, default: true },
         order: { type: Number, default: 0 },
     }],

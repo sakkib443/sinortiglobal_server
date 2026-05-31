@@ -42,7 +42,8 @@ const ProductService = {
 
         const productQuery = new QueryBuilder(
             Product.find(categoryIds.length > 0 ? { isDeleted: false } : baseFilter)
-                .populate('category', 'name slug'),
+                .populate('category', 'name slug')
+                .populate('subcategory', 'name slug'),
             query
         )
             .search(['name', 'description', 'tags', 'colors', 'aiLabels', 'slug'])
@@ -62,7 +63,8 @@ const ProductService = {
                     ...(currentFilter.$and || [currentFilter]),
                 ],
             })
-                .populate('category', 'name slug');
+                .populate('category', 'name slug')
+                .populate('subcategory', 'name slug');
 
             // Re-apply sort, paginate, fields
             const sort = (query?.sort as string)?.split(',')?.join(' ') || '-createdAt';
@@ -80,7 +82,8 @@ const ProductService = {
     // ── Get single product ──────────────────────────────────────────────
     async getProductById(id: string) {
         const product = await Product.findOne({ _id: id, isDeleted: { $ne: true } })
-            .populate('category', 'name slug');
+            .populate('category', 'name slug')
+            .populate('subcategory', 'name slug');
         if (!product) throw new AppError(404, 'Product not found');
 
         // Increment view count
@@ -91,7 +94,8 @@ const ProductService = {
     // ── Get product by slug ─────────────────────────────────────────────
     async getProductBySlug(slug: string) {
         const product = await Product.findOne({ slug, isDeleted: { $ne: true } })
-            .populate('category', 'name slug');
+            .populate('category', 'name slug')
+            .populate('subcategory', 'name slug');
         if (!product) throw new AppError(404, 'Product not found');
         await Product.findByIdAndUpdate(product._id, { $inc: { viewCount: 1 } });
         return product;
@@ -110,10 +114,16 @@ const ProductService = {
 
     // ── Create product ──────────────────────────────────────────────────
     async createProduct(payload: any) {
+        // Normalise empty subcategory to null
+        if (!payload.subcategory) payload.subcategory = null;
+
         const product = await Product.create(payload);
 
-        // Update category product count
+        // Update category (and subcategory) product counts
         await Category.findByIdAndUpdate(payload.category, { $inc: { productCount: 1 } });
+        if (payload.subcategory) {
+            await Category.findByIdAndUpdate(payload.subcategory, { $inc: { productCount: 1 } });
+        }
 
         return product;
     },
@@ -122,11 +132,17 @@ const ProductService = {
     async updateProduct(id: string, payload: any) {
         // Remove discount from payload — it's auto-calculated in pre-save
         delete payload.discount;
+        // Normalise empty subcategory to null (allows clearing it)
+        if (payload.subcategory === '' || payload.subcategory === undefined) {
+            if ('subcategory' in payload) payload.subcategory = null;
+        }
         const product = await Product.findOneAndUpdate(
             { _id: id, isDeleted: false },
             payload,
             { new: true, runValidators: true }
-        ).populate('category', 'name slug');
+        )
+            .populate('category', 'name slug')
+            .populate('subcategory', 'name slug');
         if (!product) throw new AppError(404, 'Product not found');
         return product;
     },
@@ -136,8 +152,11 @@ const ProductService = {
         const product = await Product.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
         if (!product) throw new AppError(404, 'Product not found');
 
-        // Update category product count
+        // Update category (and subcategory) product counts
         await Category.findByIdAndUpdate(product.category, { $inc: { productCount: -1 } });
+        if ((product as any).subcategory) {
+            await Category.findByIdAndUpdate((product as any).subcategory, { $inc: { productCount: -1 } });
+        }
         return product;
     },
 

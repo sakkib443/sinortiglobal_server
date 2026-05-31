@@ -20,6 +20,20 @@ export const uploadController = {
         });
     }),
 
+    // ── Single video ──────────────────────────────────────────
+    uploadVideo: catchAsync(async (req: Request, res: Response) => {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No video uploaded' });
+        }
+        const url = (req.file as any).path; // Cloudinary returns 'path' as the secure URL
+        sendResponse(res, {
+            statusCode: 200,
+            success: true,
+            message: 'Video uploaded successfully',
+            data: { url },
+        });
+    }),
+
     // ── Multiple images (up to 10) ────────────────────────────
     uploadMultiple: catchAsync(async (req: Request, res: Response) => {
         const files = req.files as Express.Multer.File[];

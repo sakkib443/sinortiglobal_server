@@ -68,6 +68,9 @@ const orderSchema = new Schema(
 
         note: { type: String, default: '' },
         timeline: { type: [timelineSchema], default: [] },
+
+        // Soft delete — hidden from listings but record is preserved
+        isDeleted: { type: Boolean, default: false },
     },
     { timestamps: true, toJSON: { virtuals: true } }
 );

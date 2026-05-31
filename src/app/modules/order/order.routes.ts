@@ -21,6 +21,7 @@ router.get('/admin/:id', authMiddleware, authorizeRoles('admin'), OrderControlle
 router.patch('/admin/:id/status', authMiddleware, authorizeRoles('admin'), validateRequest(updateOrderStatusValidation), OrderController.updateStatus);
 router.patch('/admin/:id/payment', authMiddleware, authorizeRoles('admin'), OrderController.updatePaymentStatus);
 router.patch('/admin/:id/note', authMiddleware, authorizeRoles('admin'), OrderController.addNote);
+router.delete('/admin/:id', authMiddleware, authorizeRoles('admin'), OrderController.delete);
 
 // ── Legacy/general ───────────────────────────────
 router.get('/:id', authMiddleware, OrderController.getById);

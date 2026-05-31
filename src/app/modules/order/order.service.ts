@@ -9,7 +9,7 @@ import { notifyOrderToWhatsApp } from '../../utils/whatsappNotify';
 const OrderService = {
     async getAllOrders(query: Record<string, unknown>) {
         const orderQuery = new QueryBuilder(
-            Order.find().populate('user', 'firstName lastName email phone').populate('items.product', 'name thumbnail'),
+            Order.find({ isDeleted: { $ne: true } }).populate('user', 'firstName lastName email phone').populate('items.product', 'name thumbnail'),
             query
         ).filter().sort().paginate();
 
@@ -20,7 +20,7 @@ const OrderService = {
 
     async getMyOrders(userId: string, query: Record<string, unknown>) {
         const orderQuery = new QueryBuilder(
-            Order.find({ user: userId }).populate('items.product', 'name thumbnail slug'),
+            Order.find({ user: userId, isDeleted: { $ne: true } }).populate('items.product', 'name thumbnail slug'),
             query
         ).sort().paginate();
 
@@ -246,22 +246,35 @@ const OrderService = {
     },
 
     async getOrderStats() {
+        const notDeleted = { isDeleted: { $ne: true } };
         const [total, pending, confirmed, processing, shipped, delivered, cancelled] = await Promise.all([
-            Order.countDocuments(),
-            Order.countDocuments({ status: 'pending' }),
-            Order.countDocuments({ status: 'confirmed' }),
-            Order.countDocuments({ status: 'processing' }),
-            Order.countDocuments({ status: 'shipped' }),
-            Order.countDocuments({ status: 'delivered' }),
-            Order.countDocuments({ status: 'cancelled' }),
+            Order.countDocuments({ ...notDeleted }),
+            Order.countDocuments({ ...notDeleted, status: 'pending' }),
+            Order.countDocuments({ ...notDeleted, status: 'confirmed' }),
+            Order.countDocuments({ ...notDeleted, status: 'processing' }),
+            Order.countDocuments({ ...notDeleted, status: 'shipped' }),
+            Order.countDocuments({ ...notDeleted, status: 'delivered' }),
+            Order.countDocuments({ ...notDeleted, status: 'cancelled' }),
         ]);
 
         const revenueData = await Order.aggregate([
-            { $match: { status: 'delivered' } },
+            { $match: { status: 'delivered', isDeleted: { $ne: true } } },
             { $group: { _id: null, totalRevenue: { $sum: '$total' } } },
         ]);
 
         return { total, pending, confirmed, processing, shipped, delivered, cancelled, totalRevenue: revenueData[0]?.totalRevenue || 0 };
+    },
+
+    // ── Soft-delete an order (admin) — preserves the record, hides it from listings ──
+    async deleteOrder(id: string) {
+        const order = await Order.findById(id);
+        if (!order) throw new AppError(404, 'Order not found');
+        if ((order as any).isDeleted) throw new AppError(400, 'Order is already deleted');
+
+        (order as any).isDeleted = true;
+        order.timeline.push({ status: 'deleted', note: 'Order deleted by admin', createdAt: new Date() } as any);
+        await order.save();
+        return order;
     },
 };
 

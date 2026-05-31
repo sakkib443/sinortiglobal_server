@@ -35,4 +35,28 @@ export const upload = multer({
     },
 });
 
+// ── Cloudinary storage for VIDEOS (resource_type: video) ──
+const videoStorage = new CloudinaryStorage({
+    cloudinary,
+    params: async (_req: any, _file: any) => ({
+        folder:        'sinotri/videos',
+        resource_type: 'video',
+        public_id:     `video_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+    }),
+});
+
+// ── Multer upload for VIDEOS — single file, 100MB max ─────
+export const uploadVideo = multer({
+    storage: videoStorage,
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+    fileFilter: (_req, file, cb) => {
+        const allowed = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime', 'video/x-matroska'];
+        if (allowed.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only video files are allowed (mp4, webm, ogg, mov, mkv)'));
+        }
+    },
+});
+
 export { cloudinary };
