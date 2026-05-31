@@ -62,7 +62,6 @@ const OrderService = {
             }
 
             let unitPrice: number;
-            let availableStock: number;
             let thumb = product.thumbnail;
 
             if (variant) {
@@ -70,19 +69,16 @@ const OrderService = {
                 unitPrice = vDiscount > 0
                     ? Math.round(variant.price - (variant.price * vDiscount) / 100)
                     : variant.price;
-                availableStock = variant.stock;
                 if (variant.images?.[0]) thumb = variant.images[0];
             } else {
                 const pDiscount = product.discount || 0;
                 unitPrice = pDiscount > 0
                     ? Math.round(product.price - (product.price * pDiscount) / 100)
                     : product.price;
-                availableStock = product.stock;
             }
 
-            if (availableStock < item.quantity) {
-                throw new AppError(400, `Insufficient stock for: ${product.name}`);
-            }
+            // Note: out-of-stock items are still allowed (sourcing model — the
+            // shop sources on demand). Stock may go negative to signal backorder.
 
             const itemTotal = unitPrice * item.quantity;
             subtotal += itemTotal;
