@@ -4,7 +4,20 @@ import { notifyInquiryToWhatsApp } from '../../utils/whatsappNotify';
 
 const InquiryService = {
     async create(payload: any) {
-        const inquiry = await Inquiry.create(payload);
+        // Whitelist creatable fields — this endpoint is public, so never trust
+        // client-supplied status / adminReply / quotedPrice.
+        const clean = {
+            product: payload.product || undefined,
+            user: payload.user || null,
+            type: payload.type || 'product',
+            name: payload.name,
+            phone: payload.phone,
+            email: payload.email,
+            subject: payload.subject,
+            message: payload.message,
+            attachments: Array.isArray(payload.attachments) ? payload.attachments.slice(0, 10) : [],
+        };
+        const inquiry = await Inquiry.create(clean);
 
         // Notify admin on WhatsApp (fire & forget — never block the inquiry).
         // General inquiries (contact/rfq/expert) have no product.
@@ -60,12 +73,36 @@ const InquiryService = {
         return Inquiry.find({ product: productId }).sort({ createdAt: -1 });
     },
 
+    // Logged-in customer's own inquiries / RFQs (with admin quotes)
+    async getMy(userId: string, query: Record<string, unknown>) {
+        const filter: any = { user: userId };
+        if (query.type) filter.type = query.type;
+
+        const page = Number(query.page) || 1;
+        const limit = Number(query.limit) || 20;
+        const skip = (page - 1) * limit;
+
+        const inquiries = await Inquiry.find(filter)
+            .populate('product', 'name slug thumbnail price')
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await Inquiry.countDocuments(filter);
+        return { inquiries, meta: { page, limit, total, totalPages: Math.ceil(total / limit) } };
+    },
+
     async updateStatus(id: string, payload: any) {
-        return Inquiry.findByIdAndUpdate(
-            id,
-            { status: payload.status, adminReply: payload.adminReply },
-            { new: true, runValidators: true },
-        );
+        const update: any = {};
+        if (payload.status !== undefined) update.status = payload.status;
+        if (payload.adminReply !== undefined) update.adminReply = payload.adminReply;
+        if (payload.quotedPrice !== undefined) {
+            update.quotedPrice = payload.quotedPrice === '' || payload.quotedPrice === null ? null : Number(payload.quotedPrice);
+        }
+        // Stamp the reply time when a quote/reply is sent
+        if (payload.status === 'replied' || payload.adminReply) update.repliedAt = new Date();
+
+        return Inquiry.findByIdAndUpdate(id, update, { new: true, runValidators: true });
     },
 
     async delete(id: string) {
