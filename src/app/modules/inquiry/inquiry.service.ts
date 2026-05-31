@@ -3,63 +3,73 @@ import { Product } from '../product/product.model';
 import { notifyInquiryToWhatsApp } from '../../utils/whatsappNotify';
 
 const InquiryService = {
-    create: async (data: any) => {
-        const inquiry = await Inquiry.create(data);
+    async create(payload: any) {
+        const inquiry = await Inquiry.create(payload);
 
-        // Send WhatsApp notification to admin (fire & forget)
-        const product = await Product.findById(data.product).select('name');
+        // Notify admin on WhatsApp (fire & forget — never block the inquiry).
+        // General inquiries (contact/rfq/expert) have no product.
+        let productName = '';
+        if (payload.product) {
+            const product = await Product.findById(payload.product).select('name');
+            productName = product?.name || 'Unknown Product';
+        } else {
+            productName = payload.subject || `${payload.type || 'General'} inquiry`;
+        }
         notifyInquiryToWhatsApp({
-            customerName: data.name || '',
-            customerPhone: data.phone || '',
-            productName: product?.name || 'Unknown Product',
-            message: data.message || '',
-            color: data.color || '',
-            size: data.size || '',
-        }).catch(() => {}); // never block inquiry flow
+            customerName: payload.name || '',
+            customerPhone: payload.phone || '',
+            productName,
+            message: payload.message || '',
+            color: payload.color || '',
+            size: payload.size || '',
+        }).catch(() => {});
 
         return inquiry;
     },
 
-    getAll: async (query: Record<string, unknown>) => {
+    async getAll(query: Record<string, unknown>) {
+        const filter: any = {};
+        const { status, product, type, search } = query;
+        if (status) filter.status = status;
+        if (product) filter.product = product;
+        if (type) filter.type = type;
+        if (search) {
+            filter.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { phone: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { message: { $regex: search, $options: 'i' } },
+            ];
+        }
+
         const page = Number(query.page) || 1;
         const limit = Number(query.limit) || 20;
         const skip = (page - 1) * limit;
-        const filter: any = {};
-        if (query.status) filter.status = query.status;
-        if (query.product) filter.product = query.product;
 
-        const [inquiries, total] = await Promise.all([
-            Inquiry.find(filter)
-                .populate('product', 'name slug thumbnail')
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit),
-            Inquiry.countDocuments(filter),
-        ]);
-
-        return {
-            inquiries,
-            meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
-        };
-    },
-
-    getByProduct: async (productId: string) => {
-        const inquiries = await Inquiry.find({ product: productId })
+        const inquiries = await Inquiry.find(filter)
+            .populate('product', 'name slug images price')
             .sort({ createdAt: -1 })
-            .limit(50);
-        return inquiries;
+            .skip(skip)
+            .limit(limit);
+
+        const total = await Inquiry.countDocuments(filter);
+        return { inquiries, meta: { page, limit, total, totalPage: Math.ceil(total / limit) } };
     },
 
-    updateStatus: async (id: string, data: { status: string; adminReply?: string }) => {
-        const inquiry = await Inquiry.findByIdAndUpdate(id, data, { new: true });
-        if (!inquiry) throw new Error('Inquiry not found');
-        return inquiry;
+    async getByProduct(productId: string) {
+        return Inquiry.find({ product: productId }).sort({ createdAt: -1 });
     },
 
-    delete: async (id: string) => {
-        const inquiry = await Inquiry.findByIdAndDelete(id);
-        if (!inquiry) throw new Error('Inquiry not found');
-        return inquiry;
+    async updateStatus(id: string, payload: any) {
+        return Inquiry.findByIdAndUpdate(
+            id,
+            { status: payload.status, adminReply: payload.adminReply },
+            { new: true, runValidators: true },
+        );
+    },
+
+    async delete(id: string) {
+        return Inquiry.findByIdAndDelete(id);
     },
 };
 
